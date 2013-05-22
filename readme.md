@@ -48,4 +48,3 @@ Make sure that the **last two columns of the CSV** are **latitude** and **longit
 This is a quick 'n dirty hack. If speed is an issue, here is how to improve performance:
 
 * Use csv-parse `transform` instead of `fs.appendFile`
-* Abort GPS-in-region search after first match.

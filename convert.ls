@@ -34,9 +34,11 @@ convert = (args) ->
         console.log "Double-check coordinates for correct linking:"
         console.log "Latitude = #{lat} (~53); Longitude = #{lng} (~3)".cyan
         console.log "RD-X = #{x}, RD-Y = #{y}".cyan
-      for item in data.features when pointInPolygon(item.geometry.coordinates[0],x,y)
-        values = row ++ [value.trim! for key,value of item.properties]
-        write-csv-row(args.output,values)
+      for item in data.features 
+        if pointInPolygon(item.geometry.coordinates[0],x,y)
+          values = row ++ [value.trim! for key,value of item.properties]
+          write-csv-row(args.output,values)
+          break
     ..on 'end', -> console.log "Done!".green.bold
     ..on 'error', (err) -> console.error "Error parsing #{args.input}:",err.message    
 
