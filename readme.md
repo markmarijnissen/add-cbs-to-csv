@@ -25,6 +25,17 @@ Interactive prompt:
 ```
 Make sure that the **last two columns of the CSV** are **latitude** and **longitude**
 
+```
+
+Example input.csv:
++------+--------+-------+---------+----------+-----------+
+| Name | e-mail | hobby | ..etc.. | latitude | longitude |
++------+--------+-------+---------+----------+-----------+
+| Mark | mark@..| hack  | ...     | 51.8333  | 5.8667    |
+| Bob  | bob@.. | eat   | ...     | 52.7237  | 5.7583    |
++------+--------+-------+---------+----------+-----------+
+```
+
 ### Todo [for speedup]
 This is a quick 'n dirty hack. If speed is an issue, here is how to improve performance:
 
