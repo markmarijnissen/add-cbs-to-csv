@@ -1,7 +1,7 @@
 {
-  "name": "gps-plus-cbs-shp-to-csv",
+  "name": "add-cbs-to-csv",
   "version": "0.0.1",
-  "description": "Links GPS(lat,long) to CBS data (*.shp) and saves as *.csv",
+  "description": "Add CBS regional data to a CSV",
   "dependencies": {
     "colors": "~0.6.0-1",
     "csv": "~0.3.0",
