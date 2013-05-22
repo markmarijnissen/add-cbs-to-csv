@@ -1,9 +1,12 @@
+## gps-plus-cbs-shp-to-csv
+Links GPS(lat,long) to CBS data (*.shp) and saves as *.csv
+
 ### Installation
 
 Install [Node.js](www.nodejs.org)
 ```
-  git clone https://github.com/markmarijnissen/openonderwijs-csv.git
-  cd openonderwijs-csv
+  git clone https://github.com/markmarijnissen/gps-plus-cbs-shp-to-csv.git
+  cd gps-plus-cbs-shp-to-csv
   npm install
   npm install LiveScript -g
 ```
