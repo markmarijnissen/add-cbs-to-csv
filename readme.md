@@ -1,6 +1,23 @@
 ##  Add CBS regional data to a CSV
 Add CBS regional data to a *.csv based on GPS(lat,long) coordinates.
 
+Example input.csv:
++------+--------+-------+---------+----------+-----------+
+| Name | e-mail | hobby | ..etc.. | latitude | longitude |
++------+--------+-------+---------+----------+-----------+
+| Mark | mark@..| hack  | ...     | 51.8333  | 5.8667    |
+| Bob  | bob@.. | eat   | ...     | 52.7237  | 5.7583    |
++------+--------+-------+---------+----------+-----------+
+
+Example output.csv:
++------+--------+-------+---------+----------+-----------+---------+-----------+----------
+| Name | e-mail | hobby | ..etc.. | latitude | longitude | WK_CODE | GM_NAAM   | + much more 
++------+--------+-------+---------+----------+-----------+---------+-----------+----------
+| Mark | mark@..| hack  | ...     | 51.8333  | 5.8667    | GM0772  | Nijmegen  | + much more 
+| Bob  | bob@.. | eat   | ...     | 52.7237  | 5.7583    | GM0268  | Eindhoven | + much more 
++------+--------+-------+---------+----------+-----------+---------+-----------+----------
+```
+
 ### How?
 The CBS regional data contains *.shp files, which define geographic areas (buurt, wijk, gemeente). These are defined as a polygon: a list of "Rijksdriehoeksmeting", in meters. 
 
@@ -25,15 +42,6 @@ Interactive prompt:
 ```
 Make sure that the **last two columns of the CSV** are **latitude** and **longitude**
 
-```
-
-Example input.csv:
-+------+--------+-------+---------+----------+-----------+
-| Name | e-mail | hobby | ..etc.. | latitude | longitude |
-+------+--------+-------+---------+----------+-----------+
-| Mark | mark@..| hack  | ...     | 51.8333  | 5.8667    |
-| Bob  | bob@.. | eat   | ...     | 52.7237  | 5.7583    |
-+------+--------+-------+---------+----------+-----------+
 ```
 
 ### Todo [for speedup]
