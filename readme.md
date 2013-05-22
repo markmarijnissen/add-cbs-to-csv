@@ -1,6 +1,7 @@
 ##  Add CBS regional data to a CSV
 Add CBS regional data to a *.csv based on GPS(lat,long) coordinates.
 
+```
 Example input.csv:
 +------+--------+-------+---------+----------+-----------+
 | Name | e-mail | hobby | ..etc.. | latitude | longitude |
@@ -42,7 +43,6 @@ Interactive prompt:
 ```
 Make sure that the **last two columns of the CSV** are **latitude** and **longitude**
 
-```
 
 ### Todo [for speedup]
 This is a quick 'n dirty hack. If speed is an issue, here is how to improve performance:
