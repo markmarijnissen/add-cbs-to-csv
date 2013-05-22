@@ -8,22 +8,37 @@ pointInPolygon = require('./pointInPolygon')
 global <<< require './functions'
 
 convert = (args) ->
+  console.log "reading *.shp...".yellow
   (err,data) <- shp.readFile args.shp
-  columns = ["lat","lng"] ++ [key.trim! for key,value of data.features[0].properties]
-  write-csv-header(args.output,columns)
+  if err then
+    console.error "Error parsing #{args.shp}:".red,err
+    process.exit(1)
+    return
+  console.log "reading *.csv...".yellow
   csv()
-    ..from(args.input)
+    ..from.path(args.input)
     ..on 'record', (row,index) ->
       [lat,lng] = [row[*-2]*1.0,row[*-1]*1.0]
       x = rd.x(lat,lng)
       y = rd.y(lat,lng)
-      if index is 0 then return
+      if index is 0 
+        console.log "converting...".yellow
+        if isNaN(lat) then 
+          header = row
+        else
+          header = ["?" for til row.length-2] ++ ["latitude","longitude"] 
+        header = header ++ [key.trim! for key,value of data.features[0].properties]
+        write-csv-header(args.output,header)
+        return
       if index is 1 then
-        console.log "Latitude = #{lat} (groot); Longitude = #{lng} (klein)".yellow
-        console.log "RD-X = #{x}, RD-Y = #{y}".yellow
+        console.log "Double-check coordinates for correct linking:"
+        console.log "Latitude = #{lat} (~53); Longitude = #{lng} (~3)".cyan
+        console.log "RD-X = #{x}, RD-Y = #{y}".cyan
       for item in data.features when pointInPolygon(item.geometry.coordinates[0],x,y)
-        values = [lat,lng] ++ [value.trim! for key,value of item.properties]
+        values = row ++ [value.trim! for key,value of item.properties]
         write-csv-row(args.output,values)
+    ..on 'end', -> console.log "Done!".green.bold
+    ..on 'error', (err) -> console.error "Error parsing #{args.input}:",err.message    
 
 params = 
     * name: 'input'
