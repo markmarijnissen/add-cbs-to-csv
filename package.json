@@ -6,7 +6,8 @@
     "colors": "~0.6.0-1",
     "csv": "~0.3.0",
     "prelude-ls": "~1.0.0",
-    "prompt": "~0.2.9"
+    "prompt": "~0.2.9",
+    "shp": "~0.0.1"
   },
   "devDependencies": {},
   "scripts": {
