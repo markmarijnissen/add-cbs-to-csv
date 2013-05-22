@@ -1,8 +1,9 @@
 fs = require('fs')
 prompt = require('prompt')
+_ = require('prelude-ls')
 
 config =
-    delimiter: ";"
+    delimiter: ","
     quotechar: '"'
     lineterminator: "\r\n"
     alwaysquote: no
@@ -34,9 +35,9 @@ module.exports =
     string
 
   write-csv-row: (filename,values) ->
-    row =values.join(config.delimiter)+config.lineterminator
+    row =_.map(csv-field,values).join(config.delimiter)+config.lineterminator
     fs.appendFile filename,row
 
   write-csv-header: (filename,columns) ->
-    header = columns.join(config.delimiter)+config.lineterminator
+    header = _.map(csv-field,columns).join(config.delimiter)+config.lineterminator
     fs.writeFile filename,header
