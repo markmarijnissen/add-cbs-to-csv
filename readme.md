@@ -20,7 +20,7 @@ Example output.csv:
 ```
 
 ### How?
-The CBS regional data contains *.shp files, which define geographic areas (buurt, wijk, gemeente). These are defined as a polygon: a list of "Rijksdriehoeksmeting", in meters. 
+The CBS regional data contains *.shp files, which define geographic areas (buurt, wijk, gemeente). These regions are stored as a polygon (a list of "Rijksdriehoeksmetingen" in meters).
 
 This script transforms a decimal GPS-coordinate (e.g. 51.457723, 5.458309) to Rijksdriehoeksmeting and finds the matching region. It then extracts the CBS statistics ("Kerncijfers") and adds that to the CSV row.
 
@@ -41,6 +41,7 @@ Interactive prompt:
 ```
   lsc add-cbs-to-csv
 ```
+
 Make sure that the first row of the CSV contains column-names, containing:
 
 1. **latitude** or **lat**
