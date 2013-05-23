@@ -39,9 +39,14 @@ Download CBS data [here](http://www.cbs.nl/nl-NL/menu/themas/dossiers/nederland-
 ### Run
 Interactive prompt:
 ```
-  lsc convert
+  lsc add-cbs-to-csv
 ```
-Make sure that the **last two columns of the CSV** are **latitude** and **longitude**
+Make sure that the first row of the CSV contains column-names, containing:
+
+1. **latitude** or **lat**
+2. **longitude** or **long** or **lng***
+
+(case insensitive)
 
 
 ### Todo [for speedup]
