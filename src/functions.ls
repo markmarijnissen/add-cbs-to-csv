@@ -50,6 +50,9 @@ create-record-callback = (stream,data,stats) ->
       create-header(stream,row, data.features[0].properties)
       return
 
+    if index % 1000 is 0 then
+      console.log "...#index rows...".grey
+
     stats.total++
     # calculate RD from GPS
     [lat,lng] = [row[lat-index],row[lng-index]]
