@@ -4,7 +4,7 @@ shp = require 'shp'
 colors = require('colors')
 rd = require './rd'
 csv = require 'csv'
-fs = require 'fs'
+fs = require 'graceful-fs'
 pointInPolygon = require('./pointInPolygon')
 
 config =
@@ -12,6 +12,7 @@ config =
     quotechar: '"'
     lineterminator: "\r\n"
     alwaysquote: no
+    notfound: '-9'
 
 lat-index = -1
 lng-index = -1
@@ -24,11 +25,11 @@ csv-field = (string) ->
     string = config.quotechar+string+config.quotechar
   string
 
-write-csv-row = (filename,values) ->
+write-csv-row = (stream,values) ->
   row =_.map(csv-field,values).join(config.delimiter)+config.lineterminator
-  fs.appendFile filename,row
+  stream.write row
 
-create-header = (filename,row,properties) ->
+create-header = (stream,row,properties) ->
   lat-index := row.length-2
   lng-index := row.length-1
   for name,index in row
@@ -39,18 +40,18 @@ create-header = (filename,row,properties) ->
   console.log "Extracting latitude from ".cyan+row[lat-index].cyan.bold+" (column \##{lat-index+1})".cyan
   console.log "Extracting longitude from ".cyan+row[lng-index].cyan.bold+" (column \##{lng-index+1})".cyan
   columns = row ++ [key.trim! for key,value of properties]
-  write-csv-header(filename,columns)
+  write-csv-header(stream,columns)
 
-write-csv-header = (filename,columns) ->
+write-csv-header = (stream,columns) ->
   header = _.map(csv-field,columns).join(config.delimiter)+config.lineterminator
-  fs.writeFile filename,header
+  stream.write header
 
-create-record-callback = (filename,data) -> 
+create-record-callback = (stream,data) -> 
   (row,index) ->
     # write header
     if index is 0 then
       console.log "converting...".yellow
-      create-header(filename,row, data.features[0].properties)
+      create-header(stream,row, data.features[0].properties)
       return
 
     # calculate RD from GPS
@@ -65,11 +66,17 @@ create-record-callback = (filename,data) ->
       console.log "RD-X = #{x}, RD-Y = #{y}".grey
 
     # hit test until found, then write row
+    found = false
     for item in data.features 
       if pointInPolygon(item.geometry.coordinates[0],x,y)
         values = row ++ [value.trim! for key,value of item.properties]
-        write-csv-row(filename,values)
+        write-csv-row(stream,values)
+        found = true
         break
+    if not found
+      console.log "Warning: Could not link (#lat,#lng) to any data.".yellow
+      values = row ++ [config.notfound for key,value of data.features[0].properties]
+      write-csv-row(stream,values)
 
 module.exports =
   config: config
@@ -83,10 +90,16 @@ module.exports =
       return
 
     console.log "reading *.csv...".yellow
+    stream = fs.createWriteStream(args.output)
+    stream.on 'error', (err) -> console.error "Error writing #{args.output}",err.message
+    
+    (fd) <- stream.once 'open'
     csv()
       ..from.path(args.input)
-      ..on 'record', create-record-callback(args.output,data)
-      ..on 'end', -> console.log "Done!".green.bold
+      ..on 'record', create-record-callback(stream,data)
+      ..on 'end', -> 
+          stream.end!
+          console.log "Done!".green.bold
       ..on 'error', (err) -> console.error "Error parsing #{args.input}:".red,arguments,err.message    
 
   run: (args,func) ->

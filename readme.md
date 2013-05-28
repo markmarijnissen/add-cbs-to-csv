@@ -48,9 +48,3 @@ Make sure that the first row of the CSV contains column-names, containing:
 2. **longitude** or **long** or **lng***
 
 (case insensitive)
-
-
-### Todo [for speedup]
-This is a quick 'n dirty hack. If speed is an issue, here is how to improve performance:
-
-* Use csv-parse `transform` instead of `fs.appendFile`
