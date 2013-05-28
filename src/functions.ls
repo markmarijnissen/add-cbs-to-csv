@@ -57,22 +57,29 @@ create-record-callback = (stream,data,stats) ->
     y = rd.y(lat,lng)
 
     # double check notification
-    if x > y or Math.abs(lat-53) > 3 or Math.abs(lng-5) > 3 then
-      console.log "Warning: Suspicious latitude,longitude".yellow
-      console.log "Latitude = #{lat} (~55); Longitude = #{lng} (~5)".grey
-      console.log "RD-X = #{x}, RD-Y = #{y}".grey
+    suspicious = false
+    if x > y or Math.abs(lat-53) > 4 or Math.abs(lng-5) > 4 then
+      if stats.suspicious is 0
+        console.log "Warning: Suspicious latitude,longitude".yellow
+        console.log "Latitude = #{lat} (~55); Longitude = #{lng} (~5)".grey
+        console.log "RD-X = #{x}, RD-Y = #{y}".grey
+      else if stats.suspicious is 1
+        console.log "Warning: More suspicious latitude,longitude found...".yellow
+      stats.suspicious++
+      suspicious = true
 
     # hit test until found, then write row
-    found = false
-    for item in data.features 
-      if pointInPolygon(item.geometry.coordinates[0],x,y)
-        values = row ++ [value.trim! for key,value of item.properties]
-        write-csv-row(stream,values)
-        found = true
-        break
-    if not found
+    valid = false
+    if not suspicious
+      for item in data.features 
+        if pointInPolygon(item.geometry.coordinates[0],x,y)
+          values = row ++ [value.trim! for key,value of item.properties]
+          write-csv-row(stream,values)
+          valid = true
+          break
+    if not valid
       #console.log "Warning: Could not link (#lat,#lng) to any data.".yellow
-      stats.errors++
+      stats.link++
       values = row ++ [config.notfound for key,value of data.features[0].properties]
       write-csv-row(stream,values)
 
@@ -112,15 +119,17 @@ module.exports =
 
     stream = fs.createWriteStream(args.output)
     stream.on 'error', (err) -> console.error "Error writing #{args.output}",err.message
-    stats = { total: 0, errors: 0}
+    stats = { total: 0, link: 0, suspicious: 0}
     (fd) <- stream.once 'open'
     csv()
       ..from.path(args.input)
       ..on 'record', create-record-callback(stream,data,stats)
       ..on 'end', -> 
           stream.end!
-          if stats.errors > 0 then
-            console.error "Warning: could not link #{stats.errors} rows to any data!".yellow
+          if stats.suspicious > 0 then
+            console.error "Warning: Found #{stats.suspicious} suspicious GPS coordinates!".yellow
+          if stats.link > 0 then
+            console.error "Warning: Could not link #{stats.link} rows to any data!".yellow
           console.log "Done! Converted #{stats.total} rows.".green.bold
       ..on 'error', (err) -> console.error "Error parsing #{args.input}:".red,arguments,err.message    
 
