@@ -46,7 +46,7 @@ write-csv-header = (stream,columns) ->
   header = _.map(csv-field,columns).join(config.delimiter)+config.lineterminator
   stream.write header
 
-create-record-callback = (stream,data) -> 
+create-record-callback = (stream,data,stats) -> 
   (row,index) ->
     # write header
     if index is 0 then
@@ -54,6 +54,7 @@ create-record-callback = (stream,data) ->
       create-header(stream,row, data.features[0].properties)
       return
 
+    stats.total++
     # calculate RD from GPS
     [lat,lng] = [row[lat-index],row[lng-index]]
     x = rd.x(lat,lng)
@@ -74,7 +75,8 @@ create-record-callback = (stream,data) ->
         found = true
         break
     if not found
-      console.log "Warning: Could not link (#lat,#lng) to any data.".yellow
+      #console.log "Warning: Could not link (#lat,#lng) to any data.".yellow
+      stats.errors++
       values = row ++ [config.notfound for key,value of data.features[0].properties]
       write-csv-row(stream,values)
 
@@ -92,14 +94,17 @@ module.exports =
     console.log "reading *.csv...".yellow
     stream = fs.createWriteStream(args.output)
     stream.on 'error', (err) -> console.error "Error writing #{args.output}",err.message
-    
+    stats = { total: 0, errors: 0}
+
     (fd) <- stream.once 'open'
     csv()
       ..from.path(args.input)
-      ..on 'record', create-record-callback(stream,data)
+      ..on 'record', create-record-callback(stream,data,stats)
       ..on 'end', -> 
           stream.end!
-          console.log "Done!".green.bold
+          if stats.errors > 0 then
+            console.error "Warning: could not link #{stats.errors} rows to any data!".yellow
+          console.log "Done! Converted #{stats.total} rows.".green.bold
       ..on 'error', (err) -> console.error "Error parsing #{args.input}:".red,arguments,err.message    
 
   run: (args,func) ->
