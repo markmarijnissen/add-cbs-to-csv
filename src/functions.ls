@@ -40,11 +40,7 @@ create-header = (stream,row,properties) ->
   console.log "Extracting latitude from ".cyan+row[lat-index].cyan.bold+" (column \##{lat-index+1})".cyan
   console.log "Extracting longitude from ".cyan+row[lng-index].cyan.bold+" (column \##{lng-index+1})".cyan
   columns = row ++ [key.trim! for key,value of properties]
-  write-csv-header(stream,columns)
-
-write-csv-header = (stream,columns) ->
-  header = _.map(csv-field,columns).join(config.delimiter)+config.lineterminator
-  stream.write header
+  write-csv-row(stream,columns)
 
 create-record-callback = (stream,data,stats) -> 
   (row,index) ->
@@ -63,7 +59,7 @@ create-record-callback = (stream,data,stats) ->
     # double check notification
     if x > y or Math.abs(lat-53) > 3 or Math.abs(lng-5) > 3 then
       console.log "Warning: Suspicious latitude,longitude".yellow
-      console.log "Latitude = #{lat} (~53); Longitude = #{lng} (~5)".grey
+      console.log "Latitude = #{lat} (~55); Longitude = #{lng} (~5)".grey
       console.log "RD-X = #{x}, RD-Y = #{y}".grey
 
     # hit test until found, then write row
@@ -83,6 +79,27 @@ create-record-callback = (stream,data,stats) ->
 module.exports =
   config: config
 
+  cbs-to-csv: (args) ->
+    console.log "reading *.shp...".yellow
+    (err,data) <- shp.readFile args.shp
+    if err then
+      console.error "Error parsing #{args.shp}:".red,err
+      process.exit(1)
+      return
+
+    stream = fs.createWriteStream(args.output)
+    stream.on 'error', (err) -> console.error "Error writing #{args.output}",err.message
+    
+    (fd) <- stream.once 'open'
+    count = 0
+    write-csv-row(stream,[key.trim! for key,value of data.features[0].properties])
+    for item in data.features
+      values = [value.trim! for key,value of item.properties]
+      write-csv-row(stream,values)
+      count++
+    stream.end!
+    console.log "Done! Extracted #count rows of data.".green.bold 
+
   add-cbs-to-csv: (args) ->
     console.log "reading *.shp...".yellow
     (err,data) <- shp.readFile args.shp
@@ -92,10 +109,10 @@ module.exports =
       return
 
     console.log "reading *.csv...".yellow
+
     stream = fs.createWriteStream(args.output)
     stream.on 'error', (err) -> console.error "Error writing #{args.output}",err.message
     stats = { total: 0, errors: 0}
-
     (fd) <- stream.once 'open'
     csv()
       ..from.path(args.input)
